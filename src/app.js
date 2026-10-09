@@ -281,7 +281,10 @@ if (typeof document !== "undefined") {
       item.type = "button";
       item.className = "note-item";
       item.dataset.id = String(note.id);
-      item.setAttribute("aria-pressed", String(String(note.id) === String(currentNoteId)));
+      item.setAttribute(
+        "aria-pressed",
+        String(String(note.id) === String(currentNoteId)),
+      );
 
       const title = document.createElement("h3");
       title.textContent = note.title || deriveTitle(note.content);
@@ -302,7 +305,8 @@ if (typeof document !== "undefined") {
 
   function renderMarkdownPreview(content) {
     if (!content.trim()) {
-      elements.preview.innerHTML = '<p class="preview-empty">La vista previa aparecerá aquí.</p>';
+      elements.preview.innerHTML =
+        '<p class="preview-empty">La vista previa aparecerá aquí.</p>';
       return;
     }
 
@@ -320,9 +324,8 @@ if (typeof document !== "undefined") {
       "aria-pressed",
       String(Boolean(note && note.favorite)),
     );
-    elements.favoriteButton.textContent = note && note.favorite
-      ? "Quitar favorito"
-      : "Marcar favorita";
+    elements.favoriteButton.textContent =
+      note && note.favorite ? "Quitar favorito" : "Marcar favorita";
     renderMarkdownPreview(elements.editor.value);
     showEditorAndPreview();
     elements.editor.focus();
@@ -377,12 +380,13 @@ if (typeof document !== "undefined") {
       return;
     }
 
-    const result = currentNoteId === null
-      ? notesStore.addNote(content, title || undefined)
-      : notesStore.updateNote(currentNoteId, {
-          content,
-          ...(title ? { title } : {}),
-        });
+    const result =
+      currentNoteId === null
+        ? notesStore.addNote(content, title || undefined)
+        : notesStore.updateNote(currentNoteId, {
+            content,
+            ...(title ? { title } : {}),
+          });
 
     if (!result.success) {
       showMessage(result.message, "error");
