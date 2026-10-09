@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="es">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="theme-color" content="#333333" />
+		<title>BlockNotas | Notas Markdown</title>
+		<link rel="stylesheet" href="./sytles.css" />
+	</head>
+	<body>
+		<div class="container">
+			<header class="app-header">
+				<div>
+					<h1>BlockNotas</h1>
+					<p>Notas Markdown</p>
+				</div>
+				<p id="message" class="message" role="status" aria-live="polite"></p>
+			</header>
+
+			<main class="main-content">
+				<aside class="sidebar" aria-label="Lista de notas">
+					<div class="sidebar-header">
+						<h2>Tus notas</h2>
+						<button id="new-note-button" class="btn btn-primary" type="button">
+							Nueva nota
+						</button>
+						<label class="visually-hidden" for="note-search">Buscar notas</label>
+						<input
+							id="note-search"
+							class="search-input"
+							type="search"
+							placeholder="Buscar notas"
+							autocomplete="off"
+						/>
+						<button
+							id="delete-note-button"
+							class="btn btn-danger"
+							type="button"
+							disabled
+						>
+							Eliminar nota
+						</button>
+					</div>
+					<div id="note-list" class="note-list" aria-live="polite"></div>
+				</aside>
+
+				<section id="editor-section" class="editor-section" hidden>
+					<div class="editor-header">
+						<h2>Editor</h2>
+						<div class="editor-actions">
+							<button
+								id="favorite-note-button"
+								class="btn"
+								type="button"
+								aria-pressed="false"
+								disabled
+							>
+								Marcar favorita
+							</button>
+							<button id="save-note-button" class="btn btn-success" type="button">
+								Guardar
+							</button>
+						</div>
+					</div>
+					<label for="note-title">Título</label>
+					<input
+						id="note-title"
+						class="title-input"
+						type="text"
+						maxlength="100"
+						placeholder="Se obtiene del contenido si lo dejas vacío"
+					/>
+					<label for="note-content">Contenido Markdown</label>
+					<textarea
+						id="note-content"
+						class="editor-textarea"
+						placeholder="# Escribe tu nota..."
+						spellcheck="true"
+					></textarea>
+				</section>
+
+				<section id="preview-section" class="preview-section" hidden>
+					<div class="preview-header">
+						<h2>Vista previa</h2>
+					</div>
+					<div id="preview-container" class="preview-container"></div>
+				</section>
+			</main>
+		</div>
+
+		<script src="../node_modules/marked/lib/marked.umd.js"></script>
+		<script src="../node_modules/dompurify/dist/purify.min.js"></script>
+		<script src="./app.js"></script>
+	</body>
+</html>

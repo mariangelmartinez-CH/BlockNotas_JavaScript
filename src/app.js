@@ -228,3 +228,214 @@ if (typeof module !== "undefined" && module.exports) {
     createNotesStore,
   };
 }
+
+if (typeof document !== "undefined") {
+  const notesStore = createNotesStore();
+  let currentNoteId = null;
+
+  const elements = {
+    message: document.querySelector("#message"),
+    noteList: document.querySelector("#note-list"),
+    search: document.querySelector("#note-search"),
+    editorSection: document.querySelector("#editor-section"),
+    previewSection: document.querySelector("#preview-section"),
+    title: document.querySelector("#note-title"),
+    editor: document.querySelector("#note-content"),
+    preview: document.querySelector("#preview-container"),
+    saveButton: document.querySelector("#save-note-button"),
+    newButton: document.querySelector("#new-note-button"),
+    deleteButton: document.querySelector("#delete-note-button"),
+    favoriteButton: document.querySelector("#favorite-note-button"),
+  };
+
+  function showMessage(text, type) {
+    elements.message.textContent = text;
+    elements.message.className = type ? `message ${type}` : "message";
+  }
+
+  function showEditorAndPreview() {
+    elements.editorSection.hidden = false;
+    elements.previewSection.hidden = false;
+  }
+
+  function hideEditorAndPreview() {
+    elements.editorSection.hidden = true;
+    elements.previewSection.hidden = true;
+  }
+
+  function renderNoteList(notes) {
+    elements.noteList.replaceChildren();
+
+    if (notes.length === 0) {
+      const emptyState = document.createElement("p");
+      emptyState.className = "empty-message";
+      emptyState.textContent = elements.search.value.trim()
+        ? "No se encontraron notas."
+        : "No hay notas todavía. Crea una para empezar.";
+      elements.noteList.appendChild(emptyState);
+      return;
+    }
+
+    notes.forEach((note) => {
+      const item = document.createElement("button");
+      item.type = "button";
+      item.className = "note-item";
+      item.dataset.id = String(note.id);
+      item.setAttribute("aria-pressed", String(String(note.id) === String(currentNoteId)));
+
+      const title = document.createElement("h3");
+      title.textContent = note.title || deriveTitle(note.content);
+
+      const excerpt = document.createElement("p");
+      excerpt.className = "note-excerpt";
+      excerpt.textContent = note.excerpt || deriveExcerpt(note.content);
+
+      const date = document.createElement("time");
+      date.className = "note-date";
+      date.dateTime = new Date(note.updatedAt).toISOString();
+      date.textContent = new Date(note.updatedAt).toLocaleString();
+
+      item.append(title, excerpt, date);
+      elements.noteList.appendChild(item);
+    });
+  }
+
+  function renderMarkdownPreview(content) {
+    if (!content.trim()) {
+      elements.preview.innerHTML = '<p class="preview-empty">La vista previa aparecerá aquí.</p>';
+      return;
+    }
+
+    const renderedMarkdown = marked.parse(content);
+    elements.preview.innerHTML = DOMPurify.sanitize(renderedMarkdown);
+  }
+
+  function renderEditor(note) {
+    elements.title.value =
+      note && note.title !== deriveTitle(note.content) ? note.title : "";
+    elements.editor.value = note ? note.content : "";
+    elements.deleteButton.disabled = !note;
+    elements.favoriteButton.disabled = !note;
+    elements.favoriteButton.setAttribute(
+      "aria-pressed",
+      String(Boolean(note && note.favorite)),
+    );
+    elements.favoriteButton.textContent = note && note.favorite
+      ? "Quitar favorito"
+      : "Marcar favorita";
+    renderMarkdownPreview(elements.editor.value);
+    showEditorAndPreview();
+    elements.editor.focus();
+  }
+
+  function refreshNoteList() {
+    const query = elements.search.value.trim();
+    const notes = query
+      ? notesStore.searchNotes(query)
+      : notesStore.getNotesOrderedByDate();
+    renderNoteList(notes);
+  }
+
+  function selectNote(noteId) {
+    const note = notesStore.getNoteById(Number(noteId));
+    if (!note) {
+      return;
+    }
+
+    currentNoteId = note.id;
+    renderEditor(note);
+    refreshNoteList();
+    showMessage("Nota abierta", "success");
+  }
+
+  elements.newButton.addEventListener("click", () => {
+    currentNoteId = null;
+    renderEditor(null);
+    refreshNoteList();
+    showMessage("Nueva nota", "success");
+  });
+
+  elements.noteList.addEventListener("click", (event) => {
+    const item = event.target.closest(".note-item");
+    if (item) {
+      selectNote(item.dataset.id);
+    }
+  });
+
+  elements.search.addEventListener("input", refreshNoteList);
+  elements.editor.addEventListener("input", () => {
+    renderMarkdownPreview(elements.editor.value);
+  });
+
+  elements.saveButton.addEventListener("click", () => {
+    const content = elements.editor.value;
+    const title = elements.title.value.trim();
+
+    if (!content.trim()) {
+      showMessage("Escribe algo antes de guardar la nota.", "error");
+      elements.editor.focus();
+      return;
+    }
+
+    const result = currentNoteId === null
+      ? notesStore.addNote(content, title || undefined)
+      : notesStore.updateNote(currentNoteId, {
+          content,
+          ...(title ? { title } : {}),
+        });
+
+    if (!result.success) {
+      showMessage(result.message, "error");
+      return;
+    }
+
+    currentNoteId = result.note.id;
+    renderEditor(result.note);
+    refreshNoteList();
+    showMessage("Nota guardada", "success");
+  });
+
+  elements.favoriteButton.addEventListener("click", () => {
+    if (currentNoteId === null) {
+      return;
+    }
+
+    const note = notesStore.getNoteById(currentNoteId);
+    const result = notesStore.updateNote(currentNoteId, {
+      favorite: !note.favorite,
+    });
+
+    if (result.success) {
+      renderEditor(result.note);
+      refreshNoteList();
+      showMessage("Favorito actualizado", "success");
+    }
+  });
+
+  elements.deleteButton.addEventListener("click", () => {
+    if (currentNoteId === null) {
+      return;
+    }
+
+    const result = notesStore.deleteNote(currentNoteId);
+    if (!result.success) {
+      showMessage(result.message, "error");
+      return;
+    }
+
+    currentNoteId = null;
+    renderNoteList(notesStore.getNotesOrderedByDate());
+    hideEditorAndPreview();
+    showMessage(result.message, "success");
+  });
+
+  elements.editor.addEventListener("keydown", (event) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "s") {
+      event.preventDefault();
+      elements.saveButton.click();
+    }
+  });
+
+  refreshNoteList();
+  hideEditorAndPreview();
+}
