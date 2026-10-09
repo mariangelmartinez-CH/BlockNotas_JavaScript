@@ -1,4 +1,5 @@
 const STORAGE_KEY = "markdown-notes";
+const THEME_STORAGE_KEY = "markdown-notes-theme";
 
 function deriveTitle(content) {
   if (typeof content !== "string" || content.trim() === "") {
@@ -246,7 +247,30 @@ if (typeof document !== "undefined") {
     newButton: document.querySelector("#new-note-button"),
     deleteButton: document.querySelector("#delete-note-button"),
     favoriteButton: document.querySelector("#favorite-note-button"),
+    lightThemeButton: document.querySelector("#theme-light-button"),
+    darkThemeButton: document.querySelector("#theme-dark-button"),
   };
+
+  function applyTheme(theme, persist = true) {
+    const selectedTheme = theme === "light" ? "light" : "dark";
+    document.body.dataset.theme = selectedTheme;
+    elements.lightThemeButton.setAttribute(
+      "aria-pressed",
+      String(selectedTheme === "light"),
+    );
+    elements.darkThemeButton.setAttribute(
+      "aria-pressed",
+      String(selectedTheme === "dark"),
+    );
+
+    if (persist) {
+      try {
+        localStorage.setItem(THEME_STORAGE_KEY, selectedTheme);
+      } catch {
+        showMessage("No se pudo guardar la preferencia de tema.", "error");
+      }
+    }
+  }
 
   function showMessage(text, type) {
     elements.message.textContent = text;
@@ -358,6 +382,14 @@ if (typeof document !== "undefined") {
     showMessage("Nueva nota", "success");
   });
 
+  elements.lightThemeButton.addEventListener("click", () => {
+    applyTheme("light");
+  });
+
+  elements.darkThemeButton.addEventListener("click", () => {
+    applyTheme("dark");
+  });
+
   elements.noteList.addEventListener("click", (event) => {
     const item = event.target.closest(".note-item");
     if (item) {
@@ -440,6 +472,14 @@ if (typeof document !== "undefined") {
     }
   });
 
+  let savedTheme = null;
+  try {
+    savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
+  } catch {
+    savedTheme = null;
+  }
+
+  applyTheme(savedTheme === "light" ? "light" : "dark", false);
   refreshNoteList();
   hideEditorAndPreview();
 }

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#333333" />
     <title>BlockNotas | Notas Markdown</title>
-    <link rel="stylesheet" href="./sytles.css" />
+    <link rel="stylesheet" href="./sytles.css?v=theme-toggle" />
   </head>
   <body>
     <div class="container">
@@ -14,7 +14,27 @@
           <h1>BlockNotas</h1>
           <p>Notas Markdown</p>
         </div>
-        <p id="message" class="message" role="status" aria-live="polite"></p>
+        <div class="header-tools">
+          <div class="theme-switch" role="group" aria-label="Elegir tema">
+            <button
+              id="theme-light-button"
+              class="theme-option"
+              type="button"
+              aria-pressed="false"
+            >
+              Claro
+            </button>
+            <button
+              id="theme-dark-button"
+              class="theme-option"
+              type="button"
+              aria-pressed="true"
+            >
+              Oscuro
+            </button>
+          </div>
+          <p id="message" class="message" role="status" aria-live="polite"></p>
+        </div>
       </header>
 
       <main class="main-content">
@@ -96,6 +116,6 @@
 
     <script src="../node_modules/marked/lib/marked.umd.js"></script>
     <script src="../node_modules/dompurify/dist/purify.min.js"></script>
-    <script src="./app.js"></script>
+    <script src="./app.js?v=theme-toggle"></script>
   </body>
 </html>
