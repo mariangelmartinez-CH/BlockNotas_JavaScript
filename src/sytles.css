@@ -674,12 +674,14 @@ body[data-theme="dark"] .btn:focus-visible {
   outline-color: #62b8f2;
 }
 
-body[data-theme="dark"] .btn:not(.btn-primary):not(.btn-success):not(.btn-danger) {
+body[data-theme="dark"]
+  .btn:not(.btn-primary):not(.btn-success):not(.btn-danger) {
   background-color: #303c47;
   color: #e7edf3;
 }
 
-body[data-theme="dark"] .btn:not(.btn-primary):not(.btn-success):not(.btn-danger):hover {
+body[data-theme="dark"]
+  .btn:not(.btn-primary):not(.btn-success):not(.btn-danger):hover {
   background-color: #3a4956;
 }
 
